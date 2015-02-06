@@ -1,0 +1,18 @@
+nairobi cpu=2
+jakarta cpu=2
+xian cpu=2
+tucson cpu=2
+kyoto cpu=2
+montreal cpu=2
+cairo cpu=2
+lima cpu=2
+
+
+#dublin cpu=2
+#haifa cpu=2
+
+
+prometheus cpu=4
+calypso cpu=4
+atlas cpu=4
+

@@ -1,0 +1,25 @@
+#real mode or demo mode
+mode : real;
+#correlation
+angleIng : 30;
+#nomalization
+normType : FLCF;
+#template
+#scale
+scale : -0.5;
+#bandpass
+low : -7;
+high : -25;
+#ctf
+defocus : -7;
+pixelSize : -0.36;
+voltage : 300;
+aberation : 2;
+#wedge
+angle : -30;
+#analysis
+type : PSR;
+#n-time binnig image and template
+binning : 1;
+#image
+#noise

@@ -1,0 +1,4 @@
+prometheus cpu=4
+calypso cpu=4
+atlas cpu=4
+

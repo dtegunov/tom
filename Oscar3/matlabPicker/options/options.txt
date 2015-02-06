@@ -1,0 +1,36 @@
+#job decription
+#job type is either 2d or 3d
+job type : 3d;
+volume direcory : /fs/pool/pool-bmsan-apps/tom_dev/Oscar3/images/3d/2riboPhantom.em;
+template directory : /fs/pool/pool-bmsan-apps/tom_dev/Oscar3/images/3d/riboBin1.em;
+result directory : /fs/home/hrabe/DA/test/job1;
+mode : job;
+#----------------------------------------------------------------------------------
+#correlation properties
+type : FLCF;
+templateMaskDirectory : /fs/pool/pool-bmsan-apps/tom_dev/Oscar3/images/3d/riboBin1.em;
+angles start- phi psi theta: 0 0 0;
+angles end  - phi psi theta: 359 359 359;
+angles increment -  phi psi theta : 180 180 60;
+#----------------------------------------------------------------------------------
+#point spread function
+psf path : none;
+#----------------------------------------------------------------------------------
+#parallel settings
+jobmanager : titan_jobmanager;
+jobname : Oscar_3d;
+node count : 2;
+#----------------------------------------------------------------------------------
+#modification of template
+#bandpass
+low : -1;
+high : 30;
+binning : 1;
+#----------------------------------------------------------------------------------
+#analysis mode
+ccc : 1;
+psr : 0;
+pce : 0;
+autocoor : 0;
+confidence : 0;
+

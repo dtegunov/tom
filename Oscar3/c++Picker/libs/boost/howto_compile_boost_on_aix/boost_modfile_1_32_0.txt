@@ -1,0 +1,680 @@
+diff -cr boost_1_32_0/boost/function.hpp boost-manip/boost/function.hpp
+*** boost_1_32_0/boost/function.hpp	Thu Jun  2 13:28:53 2005
+--- boost-manip/boost/function.hpp	Fri Aug 18 00:26:36 2006
+***************
+*** 22,28 ****
+  #include <boost/function/detail/prologue.hpp>
+  
+  // Visual Age C++ doesn't handle the file iteration well
+! #if BOOST_WORKAROUND(__IBMCPP__, <= 600)
+  #  if BOOST_FUNCTION_MAX_ARGS >= 0
+  #    include <boost/function/function0.hpp>
+  #  endif
+--- 22,28 ----
+  #include <boost/function/detail/prologue.hpp>
+  
+  // Visual Age C++ doesn't handle the file iteration well
+! #if BOOST_WORKAROUND(__IBMCPP__, >= 500) && BOOST_WORKAROUND(__IBMCPP__, < 800)
+  #  if BOOST_FUNCTION_MAX_ARGS >= 0
+  #    include <boost/function/function0.hpp>
+  #  endif
+diff -cr boost_1_32_0/boost/numeric/interval/detail/ppc_rounding_control.hpp boost-manip/boost/numeric/interval/detail/ppc_rounding_control.hpp
+*** boost_1_32_0/boost/numeric/interval/detail/ppc_rounding_control.hpp	Thu Jun  2 13:29:15 2005
+--- boost-manip/boost/numeric/interval/detail/ppc_rounding_control.hpp	Fri Aug 18 00:27:10 2006
+***************
+*** 11,19 ****
+  #ifndef BOOST_NUMERIC_INTERVAL_DETAIL_PPC_ROUNDING_CONTROL_HPP
+  #define BOOST_NUMERIC_INTERVAL_DETAIL_PPC_ROUNDING_CONTROL_HPP
+  
+! #ifndef __GNUC__
+! #error This header only works with GNU CC.
+! #endif
+  
+  #if !defined(powerpc) && !defined(__powerpc__) && !defined(__ppc__)
+  #error This header only works on PPC CPUs.
+--- 11,19 ----
+  #ifndef BOOST_NUMERIC_INTERVAL_DETAIL_PPC_ROUNDING_CONTROL_HPP
+  #define BOOST_NUMERIC_INTERVAL_DETAIL_PPC_ROUNDING_CONTROL_HPP
+  
+! //#ifndef __GNUC__
+! //#error This header only works with GNU CC.
+! //#endif
+  
+  #if !defined(powerpc) && !defined(__powerpc__) && !defined(__ppc__)
+  #error This header only works on PPC CPUs.
+***************
+*** 52,61 ****
+--- 52,65 ----
+  
+  } // namespace detail
+  
++ // Declarations for these exist in <math.h> and the system declarations
++ // may have exception specifications on some systems
++ #if !defined(__IBMCPP__)
+  extern "C" {
+    float rintf(float);
+    double rint(double);
+  }
++ #endif
+  
+  template<>
+  struct rounding_control<float>:
+diff -cr boost_1_32_0/boost/python/detail/def_helper.hpp boost-manip/boost/python/detail/def_helper.hpp
+*** boost_1_32_0/boost/python/detail/def_helper.hpp	Thu Jun  2 13:29:23 2005
+--- boost-manip/boost/python/detail/def_helper.hpp	Fri Aug 18 00:27:21 2006
+***************
+*** 155,161 ****
+            , T3 const&
+            , T4 const&
+            , default_call_policies
+!           , keywords<0>
+            , char const*
+            , void(not_specified::*)()   // A function pointer type which is never an
+                                         // appropriate default implementation
+--- 155,161 ----
+            , T3 const&
+            , T4 const&
+            , default_call_policies
+!           , boost::python::detail::keywords<0>
+            , char const*
+            , void(not_specified::*)()   // A function pointer type which is never an
+                                         // appropriate default implementation
+diff -cr boost_1_32_0/boost/test/detail/unit_test_config.hpp boost-manip/boost/test/detail/unit_test_config.hpp
+*** boost_1_32_0/boost/test/detail/unit_test_config.hpp	Thu Jun  2 13:29:35 2005
+--- boost-manip/boost/test/detail/unit_test_config.hpp	Fri Aug 18 00:27:38 2006
+***************
+*** 26,32 ****
+  #endif
+  
+  #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x570)) || \
+!     BOOST_WORKAROUND(__IBMCPP__, BOOST_TESTED_AT(600))     || \
+      (defined __sgi && BOOST_WORKAROUND(_COMPILER_VERSION, BOOST_TESTED_AT(730)))
+  #define BOOST_TEST_SHIFTED_LINE
+  #endif
+--- 26,32 ----
+  #endif
+  
+  #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x570)) || \
+!     BOOST_WORKAROUND(__IBMCPP__, <=700)                    || \
+      (defined __sgi && BOOST_WORKAROUND(_COMPILER_VERSION, BOOST_TESTED_AT(730)))
+  #define BOOST_TEST_SHIFTED_LINE
+  #endif
+diff -cr boost_1_32_0/libs/python/test/select_from_python_test.cpp boost-manip/libs/python/test/select_from_python_test.cpp
+*** boost_1_32_0/libs/python/test/select_from_python_test.cpp	Thu Jun  2 13:31:09 2005
+--- boost-manip/libs/python/test/select_from_python_test.cpp	Fri Aug 18 00:29:45 2006
+***************
+*** 8,13 ****
+--- 8,14 ----
+  // gcc 2.95.x and MIPSpro 7.3.1.3 linker seem to demand this definition
+  #if ((defined(__GNUC__) && __GNUC__ < 3)) \
+   || (defined(__sgi) && defined(__EDG_VERSION__) && (__EDG_VERSION__ == 238))
++  || (defined(__IBMCPP__) && __IBMCPP__ >= 500  ) 
+  namespace boost { namespace python {
+  BOOST_PYTHON_DECL bool handle_exception_impl(function0<void>)
+  {
+diff -cr boost_1_32_0/libs/test/test/prg_exec_fail2.cpp boost-manip/libs/test/test/prg_exec_fail2.cpp
+*** boost_1_32_0/libs/test/test/prg_exec_fail2.cpp	Thu Jun  2 13:31:39 2005
+--- boost-manip/libs/test/test/prg_exec_fail2.cpp	Fri Aug 18 00:30:30 2006
+***************
+*** 26,31 ****
+--- 26,32 ----
+  #include <cstddef> //Metrowerks linker needs at least one standard library
+  #endif
+  
++ #pragma options check=divzero
+  
+  int cpp_main( int, char *[] )  // note the name
+  {
+diff -cr boost_1_32_0/libs/test/test/test_tools_test.cpp boost-manip/libs/test/test/test_tools_test.cpp
+*** boost_1_32_0/libs/test/test/test_tools_test.cpp	Thu Jun  2 13:31:39 2005
+--- boost-manip/libs/test/test/test_tools_test.cpp	Fri Aug 18 00:30:31 2006
+***************
+*** 608,632 ****
+      testlist.push_back( 7 ); // 6
+      testlist.push_back( 7 );
+  
+! #if !defined(__BORLANDC__)
+      CHECK_TOOL_USAGE(
+          BOOST_CHECK_EQUAL_COLLECTIONS( testlist.begin(), testlist.end(), pattern ),
+              output.is_equal( CHECK_PATTERN( 
+                "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 2 [4 != 3]\n"
+!               << normalize_file_name( __FILE__ ) << "(" << __LINE__ << "): "
+                << "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 5 [7 != 6]\n"
+                , 6 ) )
+      );
+  #else
+      CHECK_TOOL_USAGE(
+          BOOST_CHECK_EQUAL_COLLECTIONS( testlist.begin(), testlist.end(), pattern ),
+              output.is_equal( CHECK_PATTERN( 
+                "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 2 [4 != 3]\n"
+!               << normalize_file_name( __FILE__ ) << "(" << (__LINE__-6) << "): "
+                << "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 5 [7 != 6]\n"
+                , 6 ) )
+      );
+  #endif
+  
+  }
+  
+--- 608,642 ----
+      testlist.push_back( 7 ); // 6
+      testlist.push_back( 7 );
+  
+! #if defined(__BORLANDC__)
+      CHECK_TOOL_USAGE(
+          BOOST_CHECK_EQUAL_COLLECTIONS( testlist.begin(), testlist.end(), pattern ),
+              output.is_equal( CHECK_PATTERN( 
+                "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 2 [4 != 3]\n"
+!               << normalize_file_name( __FILE__ ) << "(" << (__LINE__-6) << "): "
+                << "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 5 [7 != 6]\n"
+                , 6 ) )
+      );
++ #elif BOOST_WORKAROUND(__IBMCPP__, <=700)
++     CHECK_TOOL_USAGE(
++         BOOST_CHECK_EQUAL_COLLECTIONS( testlist.begin(), testlist.end(), pattern ),
++             output.is_equal( CHECK_PATTERN( 
++               "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 2 [4 != 3]\n"
++               << normalize_file_name( __FILE__ ) << "(" << (__LINE__-3) << "): "
++               << "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 5 [7 != 6]\n"
++               , 6 ) )
++     );
+  #else
+      CHECK_TOOL_USAGE(
+          BOOST_CHECK_EQUAL_COLLECTIONS( testlist.begin(), testlist.end(), pattern ),
+              output.is_equal( CHECK_PATTERN( 
+                "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 2 [4 != 3]\n"
+!               << normalize_file_name( __FILE__ ) << "(" << __LINE__ << "): "
+                << "error in " TEST_CASE_NAME ": test {testlist.begin(), testlist.end()} == {pattern, ...} failed in a position 5 [7 != 6]\n"
+                , 6 ) )
+      );
+  #endif
++ 
+  
+  }
+  
+diff -cr boost_1_32_0/tools/build/v1/allyourbase.jam boost-manip/tools/build/v1/allyourbase.jam
+*** boost_1_32_0/tools/build/v1/allyourbase.jam	Thu Jun  2 13:31:55 2005
+--- boost-manip/tools/build/v1/allyourbase.jam	Fri Aug 18 00:30:53 2006
+***************
+*** 2138,2144 ****
+      $(RANLIB) "$(<)"
+  }
+  
+! actions quietly updated piecemeal together RmTemps
+  {
+      $(RM) "$(>)"
+  }
+--- 2138,2144 ----
+      $(RANLIB) "$(<)"
+  }
+  
+! actions quietly ignore updated piecemeal together RmTemps
+  {
+      $(RM) "$(>)"
+  }
+diff -cr boost_1_32_0/tools/build/v1/python.jam boost-manip/tools/build/v1/python.jam
+*** boost_1_32_0/tools/build/v1/python.jam	Thu Jun  2 13:31:58 2005
+--- boost-manip/tools/build/v1/python.jam	Fri Aug 18 00:30:56 2006
+***************
+*** 413,424 ****
+      {
+          LINK_LIBPATH on $(<) = [ join $(gRUN_LD_LIBRARY_PATH($(<))) : $(SPLITPATH) ] ;
+          
+!         if $(OS) = AIX
+!         {
+              # explicitly designate the exported init<module> function
+!             LINKFLAGS on $(<) += "-e init$(<[1]:B)" ; 
+!             Aix-Implib-Action $(<) : $(>) ;
+!         }
+      }
+      gRUN_PYTHONPATH($(<)) += $(gLOCATE($(<[1]))) ;
+      .do-link $(<) : $(>) : PYD ;
+--- 413,424 ----
+      {
+          LINK_LIBPATH on $(<) = [ join $(gRUN_LD_LIBRARY_PATH($(<))) : $(SPLITPATH) ] ;
+          
+!         #if $(OS) = AIX
+!         #{
+              # explicitly designate the exported init<module> function
+!         #    LINKFLAGS on $(<) += "-e init$(<[1]:B)" ; 
+!         #    Aix-Implib-Action $(<) : $(>) ;
+!         #}
+      }
+      gRUN_PYTHONPATH($(<)) += $(gLOCATE($(<[1]))) ;
+      .do-link $(<) : $(>) : PYD ;
+diff -cr boost_1_32_0/tools/build/v1/vacpp-tools.jam boost-manip/tools/build/v1/vacpp-tools.jam
+*** boost_1_32_0/tools/build/v1/vacpp-tools.jam	Thu Jun  2 13:31:58 2005
+--- boost-manip/tools/build/v1/vacpp-tools.jam	Fri Aug 18 00:30:57 2006
+***************
+*** 10,19 ****
+--- 10,24 ----
+  # IBM VisualAge C++ compiler
+  #   version 5.0
+  #   version 6.0
++ # IBM XL C++ compiler
++ #   version 7.0
++ #   version 8.0
+  #
+  # These settings are created and tested with VisualAge running on
+  # IBM/Aix 4.3.3.0. They should also work for VisualAge on Windows NT,
+  # OS/2 and AS/400.
++ # These settings are created and tested with IBM XL C++ running on
++ # IBM/Aix 5.2.0.0. 
+  
+  # The following #// line will be used by the regression test table generation
+  # program as the column heading for HTML tables. Must not include version number.
+***************
+*** 34,40 ****
+--- 39,49 ----
+  # This disables the automatic generation of separate include files for
+  # template functions and class declarations.
+  flags vacpp C++FLAGS : -qnotempinc ;
++ flags vacpp C++FLAGS : -qnotemplateregistry ;
+  
++ # Allow C++ style comments in C files
++ flags vacpp CFLAGS : -qcpluscmt ;
++ 
+  # The following is needed to get rid of most of the annoying linker warnings
+  # about duplicated symbols when you use templates.
+  flags vacpp C++FLAGS : -qfuncsect ;
+***************
+*** 44,80 ****
+  # contained in such an object file won't be invoked.
+  flags vacpp LINKFLAGS : -qtwolink ;
+  
+  flags vacpp CFLAGS <optimization>off : -qNOOPTimize ;
+  flags vacpp CFLAGS <optimization>default : -O ;
+! flags vacpp CFLAGS <optimization>speed : -O3 -qstrict ;
+  flags vacpp CFLAGS <optimization>space : -O2 -qcompact ;
+  
+  flags vacpp CFLAGS <inlining>off : -qnoinline ;
+  flags vacpp CFLAGS <inlining>on : -qinline ;
+  flags vacpp CFLAGS <inlining>full : -qinline ;
+  
+  flags vacpp C++FLAGS <exception-handling>off : -qnoeh ;
+  flags vacpp C++FLAGS <exception-handling>on : -qeh ;
+  
+  flags vacpp C++FLAGS <rtti>off : -qnortti ;
+  flags vacpp C++FLAGS <rtti>on : -qrtti ;
+  
+! flags vacpp LINKFLAGS <runtime-link>static : -bstatic ;
+  # We want the full path to the sources in the debug symbols because otherwise
+  # the debugger won't find the sources when we use boost.build.
+! flags vacpp CFLAGS <debug-symbols>on : -g -qfullpath ;
+  flags vacpp LINKFLAGS <debug-symbols>on : -g ;
+  flags vacpp LINKFLAGS <debug-symbols>off : -s ;
+  
+  flags vacpp CFLAGS <profiling>on : -pg ;
+  flags vacpp LINKFLAGS <profiling>on : -pg ;
+  
+  flags vacpp CFLAGS <cflags> ;
+  flags vacpp C++FLAGS <cxxflags> ;
+  flags vacpp DEFINES <define> ;
+  flags vacpp UNDEFS <undef> ;
+  flags vacpp HDRS <include> ;
+! flags vacpp SYSHDRS <sysinclude> ;
+  flags vacpp LINKFLAGS <linkflags> ;
+  flags vacpp ARFLAGS <arflags> ;
+  
+--- 53,122 ----
+  # contained in such an object file won't be invoked.
+  flags vacpp LINKFLAGS : -qtwolink ;
+  
++ # Optimization levels
+  flags vacpp CFLAGS <optimization>off : -qNOOPTimize ;
+  flags vacpp CFLAGS <optimization>default : -O ;
+! flags vacpp CFLAGS <optimization>two : -O2 ;
+! flags vacpp CFLAGS <optimization>three : -O3 ;
+! flags vacpp CFLAGS <optimization>four : -O4 ;
+  flags vacpp CFLAGS <optimization>space : -O2 -qcompact ;
+  
++ # Automatic inlining 
+  flags vacpp CFLAGS <inlining>off : -qnoinline ;
+  flags vacpp CFLAGS <inlining>on : -qinline ;
+  flags vacpp CFLAGS <inlining>full : -qinline ;
+  
++ # Exception handling 
+  flags vacpp C++FLAGS <exception-handling>off : -qnoeh ;
+  flags vacpp C++FLAGS <exception-handling>on : -qeh ;
+  
++ # Runtime Type Identification
+  flags vacpp C++FLAGS <rtti>off : -qnortti ;
+  flags vacpp C++FLAGS <rtti>on : -qrtti ;
+  
+! # Enable 64bit memory addressing model
+! flags vacpp CFLAGS <address-model>64 : -q64 ;
+! flags vacpp LINKFLAGS <address-model>64 : -q64 ;
+! flags vacpp ARFLAGS <address-model>64 : -X 64 ;
+! 
+! # Disable weaksymbol support
+! flags vacpp C++FLAGS <weaksymbols>off : -qnoweaksymbol ;
+! 
+! # Dynamic Link options
+! flags vacpp LINKFLAGS <target-type>$(SHARED_TYPES) : -G ;
+! 
+! #Platform Specific options
+! switch $(JAMUNAME)
+!    {
+!    case Linux :
+!       {
+!       # Add -qpic for IBM XL C++ on Linux
+!       flags vacpp CFLAGS <shared-linkable>true : -qpic ;
+!       }
+!    case AIX* :
+!       {
+!       # Runtime linking options
+!       flags vacpp LINKFLAGS <runtime-link>dynamic : -brtl -bdynamic ;
+!       }
+!    }
+! 
+  # We want the full path to the sources in the debug symbols because otherwise
+  # the debugger won't find the sources when we use boost.build.
+! flags vacpp CFLAGS <debug-symbols>on : -qfullpath ;
+  flags vacpp LINKFLAGS <debug-symbols>on : -g ;
+  flags vacpp LINKFLAGS <debug-symbols>off : -s ;
+  
++ # Enable profiling
+  flags vacpp CFLAGS <profiling>on : -pg ;
+  flags vacpp LINKFLAGS <profiling>on : -pg ;
+  
++ 
+  flags vacpp CFLAGS <cflags> ;
+  flags vacpp C++FLAGS <cxxflags> ;
+  flags vacpp DEFINES <define> ;
+  flags vacpp UNDEFS <undef> ;
+  flags vacpp HDRS <include> ;
+! flags vacpp STDHDRS <sysinclude> ;
+  flags vacpp LINKFLAGS <linkflags> ;
+  flags vacpp ARFLAGS <arflags> ;
+  
+***************
+*** 84,109 ****
+  
+  if ! $(ARFLAGS)
+  {
+!     flags xlc ARFLAGS : "" ;
+  }
+  
+- # Clear the STDHDRS variable which contains /usr/include. Vacpp does not like
+- # that this sys directory is included (vacpp related headers are in
+- # /usr/vacpp/include)
+- STDHDRS = ;
+- 
+  #### Link ####
+- 
+  rule Link-action
+  {
+-     if $(gTARGET_TYPE($(<))) = EXE
+-     {
+-         LINKFLAGS on $(<) += -brtl ;
+-     }
+-     if $(gTARGET_TYPE($(<))) in $(SHARED_TYPES)
+-     {
+-         LINKFLAGS on $(<) += -G ;
+-     }
+      xlc-Link-action $(<) : $(>) ;
+  }
+  
+--- 126,137 ----
+  
+  if ! $(ARFLAGS)
+  {
+!     flags vacpp ARFLAGS : "" ;
+  }
+  
+  #### Link ####
+  rule Link-action
+  {
+      xlc-Link-action $(<) : $(>) ;
+  }
+  
+***************
+*** 112,118 ****
+  {
+      $(SHELL_SET)$(gSHELL_LIBPATH)=$(LINK_LIBPATH)$(gAPPEND_LD_LIBRARY_PATH)
+      $(SHELL_EXPORT)$(gSHELL_LIBPATH)
+!     $(VA_CXX_COMPILER:R=$(VA_TOOL_PATH)) $(LINKFLAGS) -o "$(<[1])" -L$(LIBPATH) -L$(STDLIBPATH) "$(>)" "$(NEEDLIBS)" "$(NEEDLIBS)" -bdynamic -l$(FINDLIBS)
+  }
+  
+  #### Cc #####
+--- 140,146 ----
+  {
+      $(SHELL_SET)$(gSHELL_LIBPATH)=$(LINK_LIBPATH)$(gAPPEND_LD_LIBRARY_PATH)
+      $(SHELL_EXPORT)$(gSHELL_LIBPATH)
+!     $(VA_CXX_COMPILER:R=$(VA_TOOL_PATH)) $(LINKFLAGS) -o "$(<[1])" -L$(LIBPATH) -L$(STDLIBPATH) "$(>)" "$(NEEDLIBS)" "$(NEEDLIBS)" -l$(FINDLIBS)
+  }
+  
+  #### Cc #####
+***************
+*** 125,131 ****
+  # Always allow C++ comments in C source files!
+  actions xlc-Cc-action
+  {
+!     $(VA_C_COMPILER:R=$(VA_TOOL_PATH)) -qcpluscmt -c -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -I"$(SYSHDRS)" -o "$(<)" "$(>)"
+  }
+  
+  #### C++ ####
+--- 153,159 ----
+  # Always allow C++ comments in C source files!
+  actions xlc-Cc-action
+  {
+!     $(VA_C_COMPILER:R=$(VA_TOOL_PATH)) -c -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -o "$(<)" "$(>)"
+  }
+  
+  #### C++ ####
+***************
+*** 136,142 ****
+  
+  actions xlc-C++-action
+  {
+!     $(VA_CXX_COMPILER:R=$(VA_TOOL_PATH)) -c -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) $(C++FLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -I"$(SYSHDRS)" -o "$(<)" "$(>)"
+  }
+  
+  #### Archive ####
+--- 164,170 ----
+  
+  actions xlc-C++-action
+  {
+!     $(VA_CXX_COMPILER:R=$(VA_TOOL_PATH)) -c -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) $(C++FLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -o "$(<)" "$(>)"
+  }
+  
+  #### Archive ####
+***************
+*** 148,152 ****
+  
+  actions updated together piecemeal xlc-Archive-action
+  {
+!     ar ru$(ARFLAGS) "$(<)" "$(>)"
+  }
+--- 176,180 ----
+  
+  actions updated together piecemeal xlc-Archive-action
+  {
+!     ar $(ARFLAGS) ru  "$(<)" "$(>)"
+  }
+diff -cr boost_1_32_0/tools/regression/run_tests.sh boost-manip/tools/regression/run_tests.sh
+*** boost_1_32_0/tools/regression/run_tests.sh	Thu Jun  2 13:32:10 2005
+--- boost-manip/tools/regression/run_tests.sh	Fri Aug 18 00:31:17 2006
+***************
+*** 15,22 ****
+  # This can be either a non-exitent directory or an already complete Boost
+  # source tree.
+  #
+! boost_root="$HOME/CVSROOTs/Boost/boost_regression"
+  
+  #
+  # Wether to fetch the most current Boost code from CVS (yes/no):
+  # There are two contexts to use this script in: on an active Boost CVS
+--- 15,27 ----
+  # This can be either a non-exitent directory or an already complete Boost
+  # source tree.
+  #
+! #boost_root="$HOME/CVSROOTs/Boost/boost_regression"
+! boost_root=/home/montana/boost/boost-1.32.0
+! #Set your Python Path here
+! export PYTHON_ROOT=/home/montana/boost/local/aix52
+! export PYTHON_VERSION=2.4
+  
++ export LIBPATH=$PYTHON_ROOT/lib/python2.4/config:../bin/boost/libs/python/build/libboost_python.so/vacpp/debug:$LIBPATH
+  #
+  # Wether to fetch the most current Boost code from CVS (yes/no):
+  # There are two contexts to use this script in: on an active Boost CVS
+***************
+*** 32,38 ****
+  # regression tests. Specify a space separated list, of the Boost.Build toolsets.
+  # Each will be built and tested in sequence.
+  #
+! test_tools=gcc
+  
+  #
+  # "toolset" is the Boost.Build toolset to use for building the helper programs.
+--- 37,43 ----
+  # regression tests. Specify a space separated list, of the Boost.Build toolsets.
+  # Each will be built and tested in sequence.
+  #
+! test_tools=vacpp
+  
+  #
+  # "toolset" is the Boost.Build toolset to use for building the helper programs.
+***************
+*** 39,51 ****
+  # This is usually different than the toolsets one is testing. And this is
+  # normally a toolset that corresponds to the compiler built into your platform.
+  #
+! toolset=gcc
+  
+  #
+  # "comment_path" is the path to an html-file describing the test environment.
+  # The content of this file will be embedded in the status pages being produced.
+  #
+! comment_path="$boost_root/../regression_comment.html"
+  
+  
+  ### DEFAULTS ARE OK FOR THESE.
+--- 44,56 ----
+  # This is usually different than the toolsets one is testing. And this is
+  # normally a toolset that corresponds to the compiler built into your platform.
+  #
+! toolset=vacpp
+  
+  #
+  # "comment_path" is the path to an html-file describing the test environment.
+  # The content of this file will be embedded in the status pages being produced.
+  #
+! comment_path=$boost_root/../regression_comment.html
+  
+  
+  ### DEFAULTS ARE OK FOR THESE.
+***************
+*** 63,69 ****
+  # The location of the binary for running bjam. The default should work
+  # under most circumstances.
+  #
+! bjam="$boost_root/tools/build/jam_src/bin/bjam$exe_suffix"
+  
+  #
+  # "process_jam_log", and "compiler_status" paths to built helper programs:
+--- 68,74 ----
+  # The location of the binary for running bjam. The default should work
+  # under most circumstances.
+  #
+! bjam=$boost_root/tools/build/jam_src/bin/bjam$exe_suffix
+  
+  #
+  # "process_jam_log", and "compiler_status" paths to built helper programs:
+***************
+*** 70,90 ****
+  # The location of the executables of the regression help programs. These
+  # are built locally so the default should work in most situations.
+  #
+! process_jam_log="$boost_root/tools/regression/build/run/process_jam_log$exe_suffix"
+! compiler_status="$boost_root/tools/regression/build/run/compiler_status$exe_suffix"
+  
+  #
+  # "boost_build_path" can point to additional locations to find toolset files.
+  #
+! boost_build_path="$HOME/.boost-build"
+  
+  
+  ### NO MORE CONFIGURABLE PARTS.
+- 
+  #
+  # Some setup.
+  #
+! boost_dir=`basename "$boost_root"`
+  if test -n "${BOOST_BUILD_PATH}" ; then
+      export BOOST_BUILD_PATH="$boost_build_path:$BOOST_BUILD_PATH"
+  else
+--- 75,94 ----
+  # The location of the executables of the regression help programs. These
+  # are built locally so the default should work in most situations.
+  #
+! process_jam_log=$boost_root/tools/regression/build/run/process_jam_log$exe_suffix
+! compiler_status=$boost_root/tools/regression/build/run/compiler_status$exe_suffix
+  
+  #
+  # "boost_build_path" can point to additional locations to find toolset files.
+  #
+! boost_build_path=$HOME/.boost-build
+  
+  
+  ### NO MORE CONFIGURABLE PARTS.
+  #
+  # Some setup.
+  #
+! boost_dir=`basename $boost_root`
+  if test -n "${BOOST_BUILD_PATH}" ; then
+      export BOOST_BUILD_PATH="$boost_build_path:$BOOST_BUILD_PATH"
+  else
+***************
+*** 151,157 ****
+  #
+  echo running the $tool regression tests:
+  cd "$boost_root/status"
+! "$bjam" -sTOOLS=$tool --dump-tests test 2>&1 | tee regress.log
+  
+  #
+  # STEP 4:
+--- 155,161 ----
+  #
+  echo running the $tool regression tests:
+  cd "$boost_root/status"
+! "$bjam" -a -sTOOLS=$tool --dump-tests test 2>&1 | tee regress.log
+  
+  #
+  # STEP 4:
+***************
+*** 158,164 ****
+  # post process the results:
+  #
+  echo processing the regression test results for $tool:
+! cat regress.log | "$process_jam_log"
+  if test $? != 0 ; then
+      echo "Failed regression log post processing."
+      exit 256
+--- 162,168 ----
+  # post process the results:
+  #
+  echo processing the regression test results for $tool:
+! cat regress.log | "$process_jam_log" "$boost_root"
+  if test $? != 0 ; then
+      echo "Failed regression log post processing."
+      exit 256
+***************
+*** 172,178 ****
+  #
+  uname=`uname`
+  echo generating html tables:
+! "$compiler_status" --comment "$comment_path" "$boost_root" cs-$uname.html cs-$uname-links.html
+  if test $? != 0 ; then
+      echo "Failed HTML result table generation."
+      exit 256
+--- 176,184 ----
+  #
+  uname=`uname`
+  echo generating html tables:
+! # "$compiler_status" --jamfile "$boost_root"  "$boost_root" cs-$uname.html cs-$uname-links.html
+! echo $compiler_status $boost_root cs-$uname.html cs-$uname-links.html
+! $compiler_status $boost_root cs-$uname.html cs-$uname-links.html
+  if test $? != 0 ; then
+      echo "Failed HTML result table generation."
+      exit 256

@@ -1,0 +1,713 @@
+diff -cr boost_1_34_0/boost/date_time/date_generators.hpp boost_1_34_0_ibm/boost/date_time/date_generators.hpp
+*** boost_1_34_0/boost/date_time/date_generators.hpp	Sun Apr 17 17:48:19 2005
+--- boost_1_34_0_ibm/boost/date_time/date_generators.hpp	Tue Mar 20 16:33:00 2007
+***************
+*** 153,158 ****
+--- 153,160 ----
+     month_type month_;
+   };
+  
++   //! Returns nth arg as string. 1 -> "first", 2 -> "second", max is 5.
++   BOOST_DATE_TIME_DECL const char* nth_as_str(int n);
+  
+    //! Useful generator functor for finding holidays
+    /*! Based on the idea in Cal. Calc. for finding holidays that are
+***************
+*** 241,249 ****
+      week_num wn_;
+      day_of_week_type dow_;
+    };
+!   
+!   //! Returns nth arg as string. 1 -> "first", 2 -> "second", max is 5.
+!   BOOST_DATE_TIME_DECL const char* nth_as_str(int n);
+  
+    //! Useful generator functor for finding holidays and daylight savings
+    /*! Similar to nth_kday_of_month, but requires less paramters
+--- 243,249 ----
+      week_num wn_;
+      day_of_week_type dow_;
+    };
+! 
+  
+    //! Useful generator functor for finding holidays and daylight savings
+    /*! Similar to nth_kday_of_month, but requires less paramters
+diff -cr boost_1_34_0/boost/function.hpp boost_1_34_0_ibm/boost/function.hpp
+*** boost_1_34_0/boost/function.hpp	Fri Aug 12 09:02:33 2005
+--- boost_1_34_0_ibm/boost/function.hpp	Tue Mar 20 16:46:00 2007
+***************
+*** 21,28 ****
+  // in anything that may be included by function_template.hpp doesn't break
+  #include <boost/function/detail/prologue.hpp>
+  
+! // Visual Age C++ doesn't handle the file iteration well
+! #if BOOST_WORKAROUND(__IBMCPP__, >= 500)
+  #  if BOOST_FUNCTION_MAX_ARGS >= 0
+  #    include <boost/function/function0.hpp>
+  #  endif
+--- 21,28 ----
+  // in anything that may be included by function_template.hpp doesn't break
+  #include <boost/function/detail/prologue.hpp>
+  
+! // Older versions of the IBM C++ compiler do not handle file iterations well
+! #if BOOST_WORKAROUND(__IBMCPP__, >= 500) && BOOST_WORKAROUND(__IBMCPP__, < 800)
+  #  if BOOST_FUNCTION_MAX_ARGS >= 0
+  #    include <boost/function/function0.hpp>
+  #  endif
+diff -cr boost_1_34_0/boost/numeric/interval/detail/ppc_rounding_control.hpp boost_1_34_0_ibm/boost/numeric/interval/detail/ppc_rounding_control.hpp
+*** boost_1_34_0/boost/numeric/interval/detail/ppc_rounding_control.hpp	Mon Sep 12 14:31:15 2005
+--- boost_1_34_0_ibm/boost/numeric/interval/detail/ppc_rounding_control.hpp	Thu May 17 16:48:00 2007
+***************
+*** 51,60 ****
+--- 51,64 ----
+  
+  } // namespace detail
+  
++ // Do not declare the following C99 symbols if <math.h> is C99-compliant.
++ // Otherwise, conflicts may occur, due to differences between prototypes.
++ #if !defined(_ISOC99_SOURCE) && !defined(__USE_ISOC99)
+  extern "C" {
+    float rintf(float);
+    double rint(double);
+  }
++ #endif
+  
+  template<>
+  struct rounding_control<float>:
+diff -cr boost_1_34_0/boost/python/module_init.hpp boost_1_34_0_ibm/boost/python/module_init.hpp
+*** boost_1_34_0/boost/python/module_init.hpp	Tue Nov 29 17:26:05 2005
+--- boost_1_34_0_ibm/boost/python/module_init.hpp	Tue Apr 10 20:31:00 2007
+***************
+*** 26,48 ****
+  }                                                       \
+  void init_module_##name()
+  
+! #  elif defined(_AIX) && !defined(BOOST_PYTHON_STATIC_MODULE)
+! 
+! #   include <boost/python/detail/aix_init_module.hpp>
+! #   define BOOST_PYTHON_MODULE_INIT(name)                               \
+! void init_module_##name();                                              \
+! extern "C"                                                              \
+! {                                                                       \
+!     extern PyObject* _PyImport_LoadDynamicModule(char*, char*, FILE *); \
+!     void init##name()                                                   \
+!     {                                                                   \
+!         boost::python::detail::aix_init_module(                         \
+!             _PyImport_LoadDynamicModule, #name, &init_module_##name);   \
+!     }                                                                   \
+! }                                                                       \
+! void init_module_##name()
+! 
+! # elif BOOST_PYTHON_USE_GCC_SYMBOL_VISIBILITY
+  
+  #   define BOOST_PYTHON_MODULE_INIT(name)                               \
+  void init_module_##name();                                              \
+--- 26,32 ----
+  }                                                       \
+  void init_module_##name()
+  
+! #  elif BOOST_PYTHON_USE_GCC_SYMBOL_VISIBILITY
+  
+  #   define BOOST_PYTHON_MODULE_INIT(name)                               \
+  void init_module_##name();                                              \
+***************
+*** 52,58 ****
+  }                                                                       \
+  void init_module_##name()
+  
+! # else
+  
+  #   define BOOST_PYTHON_MODULE_INIT(name)                               \
+  void init_module_##name();                                              \
+--- 36,42 ----
+  }                                                                       \
+  void init_module_##name()
+  
+! #  else
+  
+  #   define BOOST_PYTHON_MODULE_INIT(name)                               \
+  void init_module_##name();                                              \
+diff -cr boost_1_34_0/boost/python/type_id.hpp boost_1_34_0_ibm/boost/python/type_id.hpp
+*** boost_1_34_0/boost/python/type_id.hpp	Wed Sep 20 18:49:18 2006
+--- boost_1_34_0_ibm/boost/python/type_id.hpp	Wed Jun 20 17:49:00 2007
+***************
+*** 33,39 ****
+   || defined(_AIX) \
+   || (   defined(__sgi) && defined(__host_mips)) \
+   || (defined(__hpux) && defined(__HP_aCC)) \
+!  || (defined(linux) && defined(__INTEL_COMPILER) && defined(__ICC))
+  #  define BOOST_PYTHON_TYPE_ID_NAME
+  # endif 
+  
+--- 33,40 ----
+   || defined(_AIX) \
+   || (   defined(__sgi) && defined(__host_mips)) \
+   || (defined(__hpux) && defined(__HP_aCC)) \
+!  || (defined(linux) && defined(__INTEL_COMPILER) && defined(__ICC)) \
+!  || (defined(__linux__) && defined(__IBMCPP__))
+  #  define BOOST_PYTHON_TYPE_ID_NAME
+  # endif 
+  
+diff -cr boost_1_34_0/boost/regex/v4/basic_regex.hpp boost_1_34_0_ibm/boost/regex/v4/basic_regex.hpp
+*** boost_1_34_0/boost/regex/v4/basic_regex.hpp	Thu Jul 20 09:44:08 2006
+--- boost_1_34_0_ibm/boost/regex/v4/basic_regex.hpp	Fri Apr 20 14:42:00 2007
+***************
+*** 254,260 ****
+     {
+        return do_assign(p1, p2, f);
+     }
+! #if !defined(BOOST_NO_MEMBER_TEMPLATES) && !defined(__IBMCPP__)
+  
+     template <class ST, class SA>
+     unsigned int BOOST_REGEX_CALL set_expression(const std::basic_string<charT, ST, SA>& p, flag_type f = regex_constants::normal)
+--- 254,260 ----
+     {
+        return do_assign(p1, p2, f);
+     }
+! #if !defined(BOOST_NO_MEMBER_TEMPLATES)
+  
+     template <class ST, class SA>
+     unsigned int BOOST_REGEX_CALL set_expression(const std::basic_string<charT, ST, SA>& p, flag_type f = regex_constants::normal)
+***************
+*** 590,596 ****
+        return this->assign(that);
+     }
+  
+! #if !defined(BOOST_NO_MEMBER_TEMPLATES) && !defined(__IBMCPP__)
+     template <class ST, class SA>
+     explicit reg_expression(const std::basic_string<charT, ST, SA>& p, flag_type f = regex_constants::normal)
+     : basic_regex<charT, traits>(p, f)
+--- 590,596 ----
+        return this->assign(that);
+     }
+  
+! #if !defined(BOOST_NO_MEMBER_TEMPLATES)
+     template <class ST, class SA>
+     explicit reg_expression(const std::basic_string<charT, ST, SA>& p, flag_type f = regex_constants::normal)
+     : basic_regex<charT, traits>(p, f)
+diff -cr boost_1_34_0/boost/tr1/detail/config.hpp boost_1_34_0_ibm/boost/tr1/detail/config.hpp
+*** boost_1_34_0/boost/tr1/detail/config.hpp	Fri Jun  2 13:50:49 2006
+--- boost_1_34_0_ibm/boost/tr1/detail/config.hpp	Mon Jun 11 19:17:00 2007
+***************
+*** 34,41 ****
+  #     define BOOST_TR1_STD_HEADER(name) <../include/name>
+  #  endif
+  
+! #if defined(__GNUC__) && !defined(BOOST_HAS_INCLUDE_NEXT)
+! #  define BOOST_HAS_INCLUDE_NEXT
+  #endif
+  
+  // Can't use BOOST_WORKAROUND here, it leads to recursive includes:
+--- 34,43 ----
+  #     define BOOST_TR1_STD_HEADER(name) <../include/name>
+  #  endif
+  
+! #if defined(__GNUC__) || (defined(__IBMCPP__) && (__IBMCPP__ >= 800) && !defined(_AIX))
+! #  ifndef BOOST_HAS_INCLUDE_NEXT
+! #     define BOOST_HAS_INCLUDE_NEXT
+! #  endif
+  #endif
+  
+  // Can't use BOOST_WORKAROUND here, it leads to recursive includes:
+***************
+*** 56,62 ****
+  #     define BOOST_TR1_NO_CONFIG_RECURSION
+  #  endif
+  #  include_next <utility>
+! #  if (__GNUC__ < 3)
+  #     include_next <algorithm>
+  #     include_next <iterator>
+  #  endif
+--- 58,64 ----
+  #     define BOOST_TR1_NO_CONFIG_RECURSION
+  #  endif
+  #  include_next <utility>
+! #  if defined(__GNUC__) && (__GNUC__ < 3)
+  #     include_next <algorithm>
+  #     include_next <iterator>
+  #  endif
+diff -cr boost_1_34_0/libs/concept_check/stl_concept_covering.cpp boost_1_34_0_ibm/libs/concept_check/stl_concept_covering.cpp
+*** boost_1_34_0/libs/concept_check/stl_concept_covering.cpp	Thu Jul 28 14:22:23 2005
+--- boost_1_34_0_ibm/libs/concept_check/stl_concept_covering.cpp	Tue Mar 20 17:57:00 2007
+***************
+*** 591,597 ****
+      std::nth_element(ri, ri, ri, comp);
+    }
+    {
+! #if defined(__GNUC__)
+      typedef less_than_op_first_archetype<> FT;
+      typedef less_than_op_second_archetype<> T;
+  #elif defined(__KCC)
+--- 591,597 ----
+      std::nth_element(ri, ri, ri, comp);
+    }
+    {
+! #if defined(__GNUC__) || defined(__IBMCPP__)
+      typedef less_than_op_first_archetype<> FT;
+      typedef less_than_op_second_archetype<> T;
+  #elif defined(__KCC)
+***************
+*** 615,621 ****
+      fi = std::lower_bound(fi, fi, value, comp);
+    }
+    {
+! #if defined(__GNUC__)
+      // Note, order of T,FT is flipped from lower_bound
+      typedef less_than_op_second_archetype<> FT;
+      typedef less_than_op_first_archetype<> T;
+--- 615,621 ----
+      fi = std::lower_bound(fi, fi, value, comp);
+    }
+    {
+! #if defined(__GNUC__)  || defined(__IBMCPP__)
+      // Note, order of T,FT is flipped from lower_bound
+      typedef less_than_op_second_archetype<> FT;
+      typedef less_than_op_first_archetype<> T;
+***************
+*** 639,645 ****
+      fi = std::upper_bound(fi, fi, value, comp);
+    }
+    {
+! #if defined(__GNUC__)
+      typedef less_than_op_first_archetype<
+        less_than_op_second_archetype< null_archetype<>, optag2>, optag1> FT;
+      typedef less_than_op_second_archetype<
+--- 639,645 ----
+      fi = std::upper_bound(fi, fi, value, comp);
+    }
+    {
+! #if defined(__GNUC__) || defined(__IBMCPP__)
+      typedef less_than_op_first_archetype<
+        less_than_op_second_archetype< null_archetype<>, optag2>, optag1> FT;
+      typedef less_than_op_second_archetype<
+***************
+*** 669,675 ****
+      ignore_unused_variable_warning(p);
+    }
+    {
+! #if defined(__GNUC__)
+      typedef less_than_op_first_archetype<
+        less_than_op_second_archetype<null_archetype<>, optag2>, optag1> FT;
+      typedef less_than_op_second_archetype<
+--- 669,675 ----
+      ignore_unused_variable_warning(p);
+    }
+    {
+! #if defined(__GNUC__)  || defined(__IBMCPP__)
+      typedef less_than_op_first_archetype<
+        less_than_op_second_archetype<null_archetype<>, optag2>, optag1> FT;
+      typedef less_than_op_second_archetype<
+***************
+*** 686,692 ****
+    {
+      typedef null_archetype<int> Arg1;
+      typedef null_archetype<char> Arg2;
+! #if defined(__GNUC__) || defined(__KCC)
+      typedef convertible_to_archetype<Arg1,
+        convertible_to_archetype<Arg2> > FT;
+      typedef convertible_to_archetype<Arg2,
+--- 686,692 ----
+    {
+      typedef null_archetype<int> Arg1;
+      typedef null_archetype<char> Arg2;
+! #if defined(__GNUC__) || defined(__KCC) || defined(__IBMCPP__)
+      typedef convertible_to_archetype<Arg1,
+        convertible_to_archetype<Arg2> > FT;
+      typedef convertible_to_archetype<Arg2,
+***************
+*** 701,707 ****
+    }
+    {
+      typedef null_archetype<> Tout;
+! #if defined(__GNUC__) || defined(__KCC)
+      typedef less_than_op_first_archetype<
+        less_than_op_second_archetype<
+        convertible_to_archetype<Tout>, optag2>, optag1 > Tin1;
+--- 701,707 ----
+    }
+    {
+      typedef null_archetype<> Tout;
+! #if defined(__GNUC__) || defined(__KCC) || defined(__IBMCPP__)
+      typedef less_than_op_first_archetype<
+        less_than_op_second_archetype<
+        convertible_to_archetype<Tout>, optag2>, optag1 > Tin1;
+diff -cr boost_1_34_0/libs/filesystem/src/operations.cpp boost_1_34_0_ibm/libs/filesystem/src/operations.cpp
+*** boost_1_34_0/libs/filesystem/src/operations.cpp	Sat Jul 29 16:45:11 2006
+--- boost_1_34_0_ibm/libs/filesystem/src/operations.cpp	Wed Mar 21 14:15:00 2007
+***************
+*** 17,22 ****
+--- 17,27 ----
+  
+  #define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
+  
++ // enable the XPG-compliant version of readdir_r() on AIX
++ #if defined(_AIX)
++ # define _LINUX_SOURCE_COMPAT
++ #endif
++ 
+  #if !(defined(__HP_aCC) && defined(_ILP32) && \
+        !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
+  # define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
+diff -cr boost_1_34_0/libs/graph/src/graphviz_digraph_lex.cpp boost_1_34_0_ibm/libs/graph/src/graphviz_digraph_lex.cpp
+*** boost_1_34_0/libs/graph/src/graphviz_digraph_lex.cpp	Fri Nov  3 15:17:54 2006
+--- boost_1_34_0_ibm/libs/graph/src/graphviz_digraph_lex.cpp	Thu May 17 18:59:00 2007
+***************
+*** 1411,1419 ****
+--- 1411,1422 ----
+  
+  #ifndef YY_ALWAYS_INTERACTIVE
+  #ifndef YY_NEVER_INTERACTIVE
++ /* Avoid conflicts if isatty() has a different prototype in <unistd.h>. */
++ #if !defined(__IBMCPP__)
+  extern int isatty YY_PROTO(( int ));
+  #endif
+  #endif
++ #endif
+  
+  #ifdef YY_USE_PROTOS
+  void yy_init_buffer( YY_BUFFER_STATE b, FILE *file )
+diff -cr boost_1_34_0/libs/graph/src/graphviz_graph_lex.cpp boost_1_34_0_ibm/libs/graph/src/graphviz_graph_lex.cpp
+*** boost_1_34_0/libs/graph/src/graphviz_graph_lex.cpp	Fri Nov  3 15:17:56 2006
+--- boost_1_34_0_ibm/libs/graph/src/graphviz_graph_lex.cpp	Thu May 17 18:59:00 2007
+***************
+*** 1411,1419 ****
+--- 1411,1422 ----
+  
+  #ifndef YY_ALWAYS_INTERACTIVE
+  #ifndef YY_NEVER_INTERACTIVE
++ /* Avoid conflicts if isatty() has a different prototype in <unistd.h>. */
++ #if !defined(__IBMCPP__)
+  extern int isatty YY_PROTO(( int ));
+  #endif
+  #endif
++ #endif
+  
+  #ifdef YY_USE_PROTOS
+  void yy_init_buffer( YY_BUFFER_STATE b, FILE *file )
+diff -cr boost_1_34_0/libs/mpl/test/Jamfile.v2 boost_1_34_0_ibm/libs/mpl/test/Jamfile.v2
+*** boost_1_34_0/libs/mpl/test/Jamfile.v2	Mon Feb 20 10:45:07 2006
+--- boost_1_34_0_ibm/libs/mpl/test/Jamfile.v2	Thu May 31 23:09:00 2007
+***************
+*** 42,48 ****
+  compile insert.cpp ;
+  compile insert_range.cpp ;
+  run int.cpp ;
+! run integral_c.cpp ;
+  compile is_placeholder.cpp ;
+  compile is_sequence.cpp ;
+  compile iterator_tags.cpp ;
+--- 42,48 ----
+  compile insert.cpp ;
+  compile insert_range.cpp ;
+  run int.cpp ;
+! run integral_c.cpp : : : <toolset>vacpp:<cxxflags>-qchars=signed ;
+  compile is_placeholder.cpp ;
+  compile is_sequence.cpp ;
+  compile iterator_tags.cpp ;
+diff -cr boost_1_34_0/libs/python/test/select_from_python_test.cpp boost_1_34_0_ibm/libs/python/test/select_from_python_test.cpp
+*** boost_1_34_0/libs/python/test/select_from_python_test.cpp	Tue Aug 10 10:59:57 2004
+--- boost_1_34_0_ibm/libs/python/test/select_from_python_test.cpp	Wed May 23 15:11:00 2007
+***************
+*** 5,13 ****
+  #include <boost/python/type_id.hpp>
+  #include <iostream>
+  
+! // gcc 2.95.x and MIPSpro 7.3.1.3 linker seem to demand this definition
+! #if ((defined(__GNUC__) && __GNUC__ < 3)) \
+!  || (defined(__sgi) && defined(__EDG_VERSION__) && (__EDG_VERSION__ == 238))
+  namespace boost { namespace python {
+  BOOST_PYTHON_DECL bool handle_exception_impl(function0<void>)
+  {
+--- 5,14 ----
+  #include <boost/python/type_id.hpp>
+  #include <iostream>
+  
+! // gcc 2.95.x, MIPSpro 7.3.1.3 and IBM XL for Linux linker seem to demand this definition
+! #if (defined(__GNUC__) && (__GNUC__ < 3)) \
+!  || (defined(__sgi) && defined(__EDG_VERSION__) && (__EDG_VERSION__ == 238)) \
+!  || (defined(__IBMCPP__) && defined(__linux__))
+  namespace boost { namespace python {
+  BOOST_PYTHON_DECL bool handle_exception_impl(function0<void>)
+  {
+diff -cr boost_1_34_0/libs/test/test/prg_exec_fail2.cpp boost_1_34_0_ibm/libs/test/test/prg_exec_fail2.cpp
+*** boost_1_34_0/libs/test/test/prg_exec_fail2.cpp	Sun Mar 19 07:49:04 2006
+--- boost_1_34_0_ibm/libs/test/test/prg_exec_fail2.cpp	Wed Mar 21 12:25:00 2007
+***************
+*** 26,31 ****
+--- 26,35 ----
+  #include <cstddef> //Metrowerks linker needs at least one standard library
+  #endif
+  
++ #if defined(__IBMCPP__)
++ #pragma options check=divzero
++ #endif
++ 
+  
+  int cpp_main( int, char *[] )  // note the name
+  {
+diff -cr boost_1_34_0/tools/build/v2/tools/python.jam boost_1_34_0_ibm/tools/build/v2/tools/python.jam
+*** boost_1_34_0/tools/build/v2/tools/python.jam	Fri Apr  6 14:17:43 2007
+--- boost_1_34_0_ibm/tools/build/v2/tools/python.jam	Thu May 17 15:42:00 2007
+***************
+*** 626,631 ****
+--- 626,633 ----
+  
+          case hpux : return  <library>rt ;
+  
++         case aix : return  <library>pthread <library>dl ;
++ 
+          case * : return  <library>pthread <library>dl <toolset>gcc:<library>util ;
+      }
+  }
+***************
+*** 926,931 ****
+--- 928,945 ----
+      {
+          alias python_for_extensions : python : $(target-requirements) ;
+      }
++     # On AIX we need Python extensions and Boost.Python to import symbols
++     # from the Python interpreter. Dynamic libraries opened with dlopen()
++     # do not inherit the symbols from the Python interpreter.
++     else if $(target-os) = aix
++     {
++         alias python_for_extensions
++                      :
++                      : $(target-requirements)
++                      :
++                      : $(usage-requirements) <linkflags>-Wl,-bI:$(libraries[1])/python.exp
++                      ;
++     }
+      else
+      {
+          alias python_for_extensions
+diff -cr boost_1_34_0/tools/build/v2/tools/vacpp.jam boost_1_34_0_ibm/tools/build/v2/tools/vacpp.jam
+*** boost_1_34_0/tools/build/v2/tools/vacpp.jam	Thu Feb 16 02:47:09 2006
+--- boost_1_34_0_ibm/tools/build/v2/tools/vacpp.jam	Tue Jun 12 14:01:00 2007
+***************
+*** 5,17 ****
+  # or copy at http://www.boost.org/LICENSE_1_0.txt)
+  
+  #
+! # Boost.Build V2 toolset for the IBM VisualAge compiler
+  #
+  
+  import toolset : flags ;
+  import feature ;
+  import common ;
+  import generators ;
+  
+  feature.extend toolset : vacpp ;
+  toolset.inherit vacpp : unix ;
+--- 5,18 ----
+  # or copy at http://www.boost.org/LICENSE_1_0.txt)
+  
+  #
+! # Boost.Build V2 toolset for the IBM XL C++ compiler
+  #
+  
+  import toolset : flags ;
+  import feature ;
+  import common ;
+  import generators ;
++ import os ;
+  
+  feature.extend toolset : vacpp ;
+  toolset.inherit vacpp : unix ;
+***************
+*** 19,61 ****
+  generators.override vacpp.searched-lib-generator : searched-lib-generator ;
+  feature.subfeature toolset vacpp : version ;
+  
+! # Configures the vacpp toolset. 
+  rule init ( version ? : command * : options * )
+  {
+  }
+  
+- 
+  # Declare generators
+  generators.register-c-compiler vacpp.compile.c : C : OBJ : <toolset>vacpp ;
+  generators.register-c-compiler vacpp.compile.c++ : CPP : OBJ : <toolset>vacpp ;
+  
+! # Declare flags.
+  flags vacpp CFLAGS <optimization>off : -qNOOPTimize ;
+  flags vacpp CFLAGS <optimization>speed : -O3 -qstrict ;
+  flags vacpp CFLAGS <optimization>space : -O2 -qcompact ;
+  
+  flags vacpp CFLAGS <inlining>off : -qnoinline ;
+  flags vacpp CFLAGS <inlining>on : -qinline ;
+! flags vacpp CFLAGS <inlining>full : -qinline ;
+  
+  flags vacpp C++FLAGS <exception-handling>off : -qnoeh ;
+  flags vacpp C++FLAGS <exception-handling>on : -qeh ;
+  
+  flags vacpp C++FLAGS <rtti>off : -qnortti ;
+  flags vacpp C++FLAGS <rtti>on : -qrtti ;
+  
+! # flags vacpp LINKFLAGS <runtime-link>static : -llibstd_v2.a ;
+! # flags vacpp LINKFLAGS <runtime-link>shared : -llibstd_v2.sl ;
+! 
+! # We want the full path to the sources in the debug symbols because otherwise
+! # the debugger won't find the sources when we use boost.build.
+! flags vacpp CFLAGS <debug-symbols>on : -g ;
+! flags vacpp LINKFLAGS <debug-symbols>on : -g ;
+  flags vacpp LINKFLAGS <debug-symbols>off : -s ;
+  
+! # V2 does not have <shared-linkable>, not sure what this meant in V1.
+! #flags vacpp CFLAGS <shared-linkable>true : +Z ;
+  
+  flags vacpp CFLAGS <profiling>on : -pg ;
+  flags vacpp LINKFLAGS <profiling>on : -pg ;
+  
+--- 20,85 ----
+  generators.override vacpp.searched-lib-generator : searched-lib-generator ;
+  feature.subfeature toolset vacpp : version ;
+  
+! # Configure the vacpp toolset
+  rule init ( version ? : command * : options * )
+  {
+  }
+  
+  # Declare generators
+  generators.register-c-compiler vacpp.compile.c : C : OBJ : <toolset>vacpp ;
+  generators.register-c-compiler vacpp.compile.c++ : CPP : OBJ : <toolset>vacpp ;
+  
+! # Allow C++ style comments in C files
+! flags vacpp CFLAGS : -qcpluscmt ;
+! 
+! # Declare flags
+  flags vacpp CFLAGS <optimization>off : -qNOOPTimize ;
+  flags vacpp CFLAGS <optimization>speed : -O3 -qstrict ;
+  flags vacpp CFLAGS <optimization>space : -O2 -qcompact ;
+  
++ # Discretionary inlining (not recommended)
+  flags vacpp CFLAGS <inlining>off : -qnoinline ;
+  flags vacpp CFLAGS <inlining>on : -qinline ;
+! #flags vacpp CFLAGS <inlining>full : -qinline ;
+! flags vacpp CFLAGS <inlining>full : ;
+  
++ # Exception handling
+  flags vacpp C++FLAGS <exception-handling>off : -qnoeh ;
+  flags vacpp C++FLAGS <exception-handling>on : -qeh ;
+  
++ # Run-time Type Identification
+  flags vacpp C++FLAGS <rtti>off : -qnortti ;
+  flags vacpp C++FLAGS <rtti>on : -qrtti ;
+  
+! # Enable 64-bit memory addressing model
+! flags vacpp CFLAGS <address-model>64 : -q64 ;
+! flags vacpp LINKFLAGS <address-model>64 : -q64 ;
+! flags vacpp ARFLAGS <address-model>64 : -X 64 ;
+! 
+! # Use absolute path when generating debug information
+! flags vacpp CFLAGS <debug-symbols>on : -g -qfullpath ;
+! flags vacpp LINKFLAGS <debug-symbols>on : -g -qfullpath ;
+  flags vacpp LINKFLAGS <debug-symbols>off : -s ;
+  
+! if [ os.name ] = AIX
+! {
+!     # Tell the linker to discard unneeded object files from archive libraries.
+!     # Please note that the static constructors contained by the discarded object
+!     # files will not be invoked.
+!     flags vacpp.compile C++FLAGS : -qfuncsect ;
+!     flags vacpp.link LINKFLAGS <link>static : -qtwolink ;
+! 
+!     # Run-time linking
+!     flags vacpp.link EXE-LINKFLAGS <link>shared : -brtl -qtwolink ;
+! }
+! else
+! {
+!     # Linux PPC
+!     flags vacpp.compile CFLAGS <link>shared : -qpic ;
+!     flags vacpp FINDLIBS : rt ;
+! }
+  
++ # Profiling
+  flags vacpp CFLAGS <profiling>on : -pg ;
+  flags vacpp LINKFLAGS <profiling>on : -pg ;
+  
+***************
+*** 79,103 ****
+  flags vacpp VA_CXX_COMPILER <threading>single : xlC   ;
+  flags vacpp VA_CXX_COMPILER <threading>multi : xlC_r ;
+  
+! ROOT = /usr/vacpp/bin ;
+  actions vacpp.link bind NEEDLIBS
+  {
+!     $(ROOT)/$(VA_CXX_COMPILER) $(LINKFLAGS) -o "$(<[1])" -L$(LIBPATH) -L$(STDLIBPATH) "$(>)" "$(NEEDLIBS)" "$(NEEDLIBS)" -l$(FINDLIBS)
+  }
+  
+  actions vacpp.link.dll bind NEEDLIBS
+  {
+!     xlC_r -qmkshrobj $(LINKFLAGS) -o "$(<[1])" -L$(LIBPATH) -L$(STDLIBPATH) "$(>)" "$(NEEDLIBS)" "$(NEEDLIBS)" -l$(FINDLIBS)
+  }
+  
+  actions vacpp.compile.c
+! {    
+!     $(ROOT)/$(VA_C_COMPILER) -c -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -o "$(<)" "$(>)"
+  }
+  
+  actions vacpp.compile.c++
+  {
+!     $(ROOT)/$(VA_CXX_COMPILER) -c -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) $(C++FLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -o "$(<)" "$(>)"
+  }
+  
+  actions updated together piecemeal vacpp.archive
+--- 103,127 ----
+  flags vacpp VA_CXX_COMPILER <threading>single : xlC   ;
+  flags vacpp VA_CXX_COMPILER <threading>multi : xlC_r ;
+  
+! 
+  actions vacpp.link bind NEEDLIBS
+  {
+!     $(VA_CXX_COMPILER) $(EXE-LINKFLAGS) $(LINKFLAGS) -o "$(<[1])" -L$(LIBPATH) -L$(STDLIBPATH) "$(>)" "$(NEEDLIBS)" "$(NEEDLIBS)" -l$(FINDLIBS)
+  }
+  
+  actions vacpp.link.dll bind NEEDLIBS
+  {
+!     xlC_r -G $(LINKFLAGS) -o "$(<[1])" -L$(LIBPATH) -L$(STDLIBPATH) "$(>)" "$(NEEDLIBS)" "$(NEEDLIBS)" -l$(FINDLIBS)
+  }
+  
+  actions vacpp.compile.c
+! {
+!     $(VA_C_COMPILER) -c -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -o "$(<)" "$(>)"
+  }
+  
+  actions vacpp.compile.c++
+  {
+!     $(VA_CXX_COMPILER) -c -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) $(C++FLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -o "$(<)" "$(>)"
+  }
+  
+  actions updated together piecemeal vacpp.archive
+diff -cr boost_1_34_0/tools/build/v2/util/os.jam boost_1_34_0_ibm/tools/build/v2/util/os.jam
+*** boost_1_34_0/tools/build/v2/util/os.jam	Thu Mar 15 00:02:22 2007
+--- boost_1_34_0_ibm/tools/build/v2/util/os.jam	Fri Mar 30 15:44:00 2007
+***************
+*** 71,76 ****
+--- 71,78 ----
+  
+  .shared-library-path-variable-MACOSX = DYLD_LIBRARY_PATH ;
+  
++ .shared-library-path-variable-AIX = LIBPATH ;
++ 
+  # Default constants
+  .shared-library-path-variable = LD_LIBRARY_PATH ;
+  .path-separator = ":" ;
+diff -cr boost_1_34_0/tools/regression/compiler_status.cpp boost_1_34_0_ibm/tools/regression/compiler_status.cpp
+*** boost_1_34_0/tools/regression/compiler_status.cpp	Mon Jul 31 10:36:51 2006
+--- boost_1_34_0_ibm/tools/regression/compiler_status.cpp	Wed Mar 21 15:24:00 2007
+***************
+*** 576,581 ****
+--- 576,589 ----
+          test_type_base.erase( trailer );
+        }
+      }
++     if ( test_type_base.size() > 4 )
++     {
++       const string::size_type trailer = test_type_base.size() - 4;
++       if ( test_type_base.substr( trailer ) == "_pyd" )
++       {
++         test_type_base.erase( trailer );
++       }
++     }
+      const xml::element & test_type_element( find_element( db, test_type_base ) );
+  
+      pass = !test_type_element.name.empty()

@@ -277,10 +277,10 @@ clear Data;
 function [MRC, Data]=mrc_classic(MRC,Data,pixelsize)
 MRC.nx=size(Data.Value,1);
 MRC.ny=size(Data.Value,2);
-if size(Data.Value)>2
+if numel(size(Data.Value))>2
     MRC.nz=size(Data.Value,3);
 else
-    MRC.nz=0;
+    MRC.nz=1;
 end
 if isa(Data.Value,'double') | isa(Data.Value,'single')
     MRC.mode=2;

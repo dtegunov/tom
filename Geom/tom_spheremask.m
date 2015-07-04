@@ -54,9 +54,12 @@ mask = ones(size(vol,1), size(vol,2), size(vol,3));
 mask(ind) = 0;
 if (nargin > 2) 
     if (sigma > 0)
-        mask(ind) = exp(-((x(ind) -radius)/sigma).^2);
-        ind = find(mask < exp(-2));
-        mask(ind) = 0;
+%         mask(ind) = exp(-((x(ind) -radius)/sigma).^2);
+%         ind = find(mask < exp(-2));
+%         mask(ind) = 0;
+        x = max(0, min((x - radius) / sigma, 1));
+        x = 0.5.*(1 + cos(x.*pi));
+        mask = x;
     end;
 end;
 vol = vol.*mask;

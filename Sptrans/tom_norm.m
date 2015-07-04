@@ -76,6 +76,10 @@ function c=tom_norm(a,scf,mask)
 %   82152 Martinsried, Germany
 %   http://www.biochem.mpg.de/tom
 
+if nargin == 1
+    scf = 'mean0+1std';
+end;
+
 if ischar(scf) && strcmp(scf,'mean0+1std')
     a = (a.*2) + 100;
 end 

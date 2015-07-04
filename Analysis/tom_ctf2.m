@@ -80,8 +80,8 @@ Phi_0=Phi_0./180.*pi; % degree in rad
 k = sqrt(x.^2.0+y.^2.0);
 % Phase: Reimer, 6.41, page 218
 % Amplitude: Reimer, 6.40
-phase    =sin(pi/2.0.*(lambda.^3.*Cs.*k.^4 - 2.*lambda.*(Dz+(Dz_delta./2.0).*sin(2.0.*(atan2(x,y)-Phi_0))).*k.^2));
-amplitude=cos(pi/2.0.*(lambda.^3.*Cs.*k.^4 - 2.*lambda.*(Dz+(Dz_delta./2.0).*sin(2.0.*(atan2(x,y)-Phi_0))).*k.^2));
+phase    =sin(pi/2.0.*(lambda.^3.*Cs.*k.^4 + 2.*lambda.*(Dz+(Dz_delta./2.0).*cos(2.0.*(atan2(y,x)-Phi_0))).*k.^2));
+amplitude=cos(pi/2.0.*(lambda.^3.*Cs.*k.^4 + 2.*lambda.*(Dz+(Dz_delta./2.0).*cos(2.0.*(atan2(y,x)-Phi_0))).*k.^2));
 
 % Frank: Three-dimensional electron microscopy of macromolecular
 % assemblies, formula 2.4, 2.5 page 36. identical result !

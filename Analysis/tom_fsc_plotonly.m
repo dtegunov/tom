@@ -1,4 +1,4 @@
-function [fsc f v_05 v_03 v_01]=tom_fsc(vol1,vol2,nr_shells,objectpixelsize,display,wedge)
+function [fsc f v_05 v_03 v_01]=tom_fsc_plotonly(fsc,objectpixelsize,display)
 
 %TOM_FSC calculates a Fourier Shell Correlation Function of two 3D volumes.
 %
@@ -42,49 +42,6 @@ function [fsc f v_05 v_03 v_01]=tom_fsc(vol1,vol2,nr_shells,objectpixelsize,disp
 %   82152 Martinsried, Germany
 %   http://www.biochem.mpg.de/tom
 
-if nargin < 2
-    error('tom_fsc:argChk','Wrong number of input arguments\nSyntax: [fsc]=tom_fsc(vol1,vol2,nr_shells,objectpixelsize,display).')
-end
-if size(vol1)~=size(vol2)
-    error('tom_fsc:argChk','Input volumes have different dimensions.\nSyntax: [fsc]=tom_fsc(vol1,vol2,nr_shells,objectpixelsize,display).');
-end
-if nargin<6
-    wedge=1;
-end
-if nargin<5
-    display=0;
-end
-if nargin<4
-    display=0;objectpixelsize=1;
-end
-if nargin<3
-    nr_shells=size(vol1,1);
-end
-if nargin>2
-    nr_shells=nr_shells.*2;
-end
-vol1_fft = fftshift(fftn(vol1,[nr_shells nr_shells nr_shells]));
-vol2_fft_conj = fftshift(conj(fftn(vol2,[nr_shells nr_shells nr_shells])));
-sz=size(vol1_fft,1);
-sz_2=floor(sz./2);
-vol1_fft =vol1_fft./(sz*sz*sz);
-vol2_fft_conj =vol2_fft_conj./(sz*sz*sz);
-[x,y,z]=ndgrid(1:sz,1:sz,1:sz);
-v = sqrt((x-(sz_2+1)).^2+(y-(sz_2+1)).^2+(z-(sz_2+1)).^2);
-v = v.*wedge;
-fsc=zeros(1,sz_2);
-idx=1;
-for r=0:sz_2-1
-    ind = find(floor(v)==r);
-    nr_idx=length(ind);
-    if nr_idx>1
-        fsc_n=sum((vol1_fft(ind)-mean(vol1_fft(ind))).*(vol2_fft_conj(ind)-mean(vol2_fft_conj(ind))))./(nr_idx-1);
-        fsc(idx)=real(fsc_n./(std(vol1_fft(ind)).*std(vol2_fft_conj(ind))));
-    else
-        fsc(idx)=1;
-    end;
-    idx=idx+1;
-end
 f=1./(length(fsc)./[1:length(fsc)].*(objectpixelsize.*2));
 v_03=0;
 v_05=0;
@@ -94,7 +51,7 @@ for i=1:length(fsc)
         v1=f(i-1);
         v2=f(i);
         v=(v1+v2)./2;
-        v_03=1/v;
+        v_03=1/f(i-1);
         break;
     end;
 end;
@@ -103,16 +60,7 @@ for i=1:length(fsc)
         v1=f(i-1);
         v2=f(i);
         v=(v1+v2)./2;
-        v_05=1/v;
-        break;
-    end;
-end;
-for i=1:length(fsc)
-    if fsc(i)<0.1
-        v1=f(i-1);
-        v2=f(i);
-        v=(v1+v2)./2;
-        v_01=1/v;
+        v_05=1/f(i-1);
         break;
     end;
 end;

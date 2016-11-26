@@ -23,6 +23,7 @@ function tom_mrcwrite(varargin)
 %                       Specify the compatibily of the MRC file. 'classic' save as a
 %                       standart MRC file, 'fei' as a FEI style and 'imod' as a IMOD style.
 %   'pixelsize'         Pixel size in A/px
+%   'origin'            Origin offset in A
 % 
 %STRUCTURE OF MRC-DATA FILES:
 %MRC Header has a length of 1024 bytes
@@ -133,7 +134,8 @@ msgInvalidPair = 'Bad value for argument: ''%s''';
 options = struct('name', '',...
                  'style', 'classic',...
                  'format','',...
-                 'pixelsize','1');
+                 'pixelsize','1',...
+                 'origin','[0 0 0]');
 [comp_typ,maxsize,endian] = computer;
 switch endian
     case 'L'
@@ -143,6 +145,7 @@ switch endian
 end
 
 pixelsize = 1;
+origin = [0 0 0];
 
 if nargin<1 %no data
     error(['Data not specified (e.g. tom_mrcwrite(out)']);
@@ -201,7 +204,13 @@ elseif nargin>=1
                     pixelsize = pvalue;
                 else
                     error(sprintf(msgInvalidPair,pname));
-                end                 
+                end     
+            case 'origin'
+                if ~ischar(pvalue)
+                    origin = pvalue;
+                else
+                    error(sprintf(msgInvalidPair,pname));
+                end               
         end
     end
     if isempty(options.name)
@@ -233,7 +242,8 @@ MRC=struct('nx',0,'ny',0,'nz',0,'mode',0,...
 
 switch options.style
     case 'classic'
-        [MRC,Data]=mrc_classic(MRC, Data,pixelsize);
+        [MRC,Data]=mrc_classic(MRC, Data, pixelsize);
+        MRC.xorg = origin(1); MRC.yorg = origin(2); MRC.zorg = origin(3);
         fid=fopen(options.name,'w',options.format);
         if fid==-1
             error(['Cannot open: ' options.name ' file']);
@@ -249,7 +259,8 @@ switch options.style
         %end;
         %writefile(MRC, fid);
     case 'fei'
-        [MRC,Data]=mrc_classic(MRC, Data,pixelsize);
+        [MRC,Data]=mrc_classic(MRC, Data, pixelsize);
+        MRC.xorg = origin(1); MRC.yorg = origin(2); MRC.zorg = origin(3);
         MRC.next=1024*128; %size of ext. header of FEI
         fid=fopen(options.name,'w',options.format);
         if fid==-1

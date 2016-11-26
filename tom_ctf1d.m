@@ -1,12 +1,11 @@
 function [ ctf, acurve, pcurve ] = tom_ctf1d( length, pixelsize, voltage, cs, defocus, amplitude, phaseshift, bfactor )
 
-ny = 0.5 / pixelsize;
-voltagerel = voltage * (1 + voltage / 1022000);
-lambda = sqrt(150.4 / voltagerel) * 1e-10;
+ny = 1 / pixelsize;
+lambda = 12.2643247 / sqrt(voltage * (1.0 + voltage * 0.978466e-6)) * 1e-10;
 lambda2 = lambda * 2;
 
 points = 0:length-1;
-points = points./(length).*ny;
+points = points./(2 * length).*ny;
 k2 = points.^2;
 term1 = lambda.^3.*cs.*k2.^2;
 

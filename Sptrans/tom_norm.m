@@ -115,7 +115,7 @@ elseif ischar(scf) && strcmp(scf,'mean0+1std')
         c = (a-mea)./st;
     else
         c = (a-mea);
-        warning('std = 0 !!!');
+%         warning('std = 0 !!!');
     end;
     
 elseif ischar(scf) && strcmp(scf,'oscar')

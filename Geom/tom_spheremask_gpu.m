@@ -43,17 +43,18 @@ if (nargin < 4)
     center=[floor(size(vol,1)/2)+1, floor(size(vol,2)/2)+1, floor(size(vol,3)/2)+1];
 end;
 
-[x,y,z]=ndgrid(0:size(vol,1)-1,0:size(vol,2)-1,0:size(vol,3)-1);
+[x,y,z]=ndgrid(gpuArray(0:size(vol,1)-1), gpuArray(0:size(vol,2)-1), gpuArray(0:size(vol,3)-1));
 
 if (nargin < 2)
     radius = floor((min(min(size(vol,1),size(vol,2)),size(vol,3))-1)/2) ;
 end;
-x = sqrt((x+1-center(1)).^2+(y+1-center(2)).^2+(z+1-center(3)).^2);
-ind = find(x>=radius);
-clear y z;
-mask = ones(size(vol,1), size(vol,2), size(vol,3));
 
-mask(ind) = 0;
+x = sqrt((x+1-center(1)).^2+(y+1-center(2)).^2+(z+1-center(3)).^2);
+clear y z;
+
+mask = gpuArray.ones(size(vol,1), size(vol,2), size(vol,3));
+mask(x >= radius) = 0;
+
 if (nargin > 2) 
     if (sigma > 0)
 %         mask(ind) = exp(-((x(ind) -radius)/sigma).^2);
@@ -64,4 +65,5 @@ if (nargin > 2)
         mask = x;
     end;
 end;
+
 vol = vol.*mask;

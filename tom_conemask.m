@@ -1,10 +1,7 @@
 function [ map ] = tom_conemask( map, direction, coneangle )
 
 side = size(map, 1);
-[xx, yy, zz] = ndgrid(0:side-1,0:side-1,0:side-1);
-xx = xx - side / 2;
-yy = yy - side / 2;
-zz = zz - side / 2;
+[xx, yy, zz] = ndgrid(-side/2:side/2-1,-side/2:side/2-1,-side/2:side/2-1);
 vx = [xx(:), yy(:), zz(:)];
 
 dotprod = vx*direction';
